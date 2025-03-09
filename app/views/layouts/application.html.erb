@@ -5,29 +5,134 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%# PWA manifest (chỉ bật nếu có trong routes.rb) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <style>
+      /* Navigation Styles */
+      .nav-container {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+      }
+
+      .navigation {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .brand {
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: #333;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .nav-link {
+        color: #555;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .nav-link:hover {
+        color: #007bff;
+      }
+
+      .nav-link.active {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+      }
+
+      /* Mobile Nav Toggle */
+      .mobile-toggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .mobile-toggle {
+          display: block;
+        }
+
+        .nav-links {
+          display: none;
+          width: 100%;
+          flex-direction: column;
+          position: absolute;
+          top: 70px;
+          left: 0;
+          background-color: #f8f9fa;
+          padding: 1rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-links.show {
+          display: flex;
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <%= link_to "Home", root_path%>
-    <%= link_to "About", about_path%>
+    <!-- Navigation -->
+    <div class="nav-container">
+      <nav class="navigation">
+        <a href="/" class="brand">Myapp BNB</a>
+
+        <button class="mobile-toggle" onclick="toggleMobileNav()">☰</button>
+
+        <div class="nav-links" id="navLinks">
+          <a href="/" class="nav-link <%= current_page?('/') ? 'active' : '' %>">Home</a>
+          <a href="/about" class="nav-link <%= current_page?('/about') ? 'active' : '' %>">About</a>
+          <a href="/contact" class="nav-link <%= current_page?('/contact') ? 'active' : '' %>">Contact</a>
+
+          <% if user_signed_in? %>
+            <%= link_to "Log out", destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "nav-link pull-md-right" %>
+            <%= link_to t('navigation.sign_out'), destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-danger ml-3" %>
+          <% else %>
+            <a href="<%= new_user_session_path %>" class="nav-link">Log in</a>
+          <% end %>
+        </div>
+      </nav>
+    </div>
+
     <% flash.each do |name, message| %>
       <%= content_tag :div, message, class: "alert alert-#{name}" %>
     <% end %>
+
     <%= yield %>
+
+    <script>
+      function toggleMobileNav() {
+        const navLinks = document.getElementById('navLinks');
+        navLinks.classList.toggle('show');
+      }
+    </script>
   </body>
 </html>
